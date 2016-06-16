@@ -137,7 +137,7 @@ print(plot2, vp = vplayout(1, 2))
 
 
 #### 2. Across the United States, which types of events have the greatest economic consequences?
-
+Floods caused the most Total Damage (graph #1).  Floods also cause the most in Total Property Damage (graph #2).  Howoever, droughts cause the Most Crop Damage (graph #3)
 ```{r}
 plot3 <- ggplot(mostdamageOrd, aes(x=EventType, y=Total)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
 plot4 <- ggplot(mostpropdamageOrd, aes(x=EventType, y=Damage)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
