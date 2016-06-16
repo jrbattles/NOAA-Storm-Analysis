@@ -1,0 +1,143 @@
+---
+title: "Weather Events Impact Analysis"
+author: "Jason R. Battles"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Synopsis
+
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern.
+
+This brief study involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
+
+The basic goal of this study is to explore the NOAA Storm Database and answer some basic questions about severe weather events and their impact on fatalities, injuries, and economic impact.
+
+1. Across the United States, which types of events are most harmful with respect to population health?
+
+2. Across the United States, which types of events have the greatest economic consequences?
+
+This report may be considered by a government or municipal manager who might be responsible for preparing for severe weather events and will need to prioritize resources for different types of events.
+
+## Data Processing
+
+### Prepare Environment
+
+```{r}
+install.packages("downloader")
+library(downloader)
+library(ggplot2)
+library(grid)
+```
+
+### Data Load
+Download the compressed data file. Decompress the file and assign the results to a data frame.
+```{r cache=TRUE}
+
+download(url="https://d396qusza40orc.cloudfront.net/repdata/data/StormData.csv.bz2", destfile="../data/StormData.csv.bz2")
+
+dataRaw <- read.csv(bzfile("../data/StormData.csv.bz2"))
+```
+
+### Data Verification
+There should be 90,2297 observations of 37 variables
+```{r}
+str(dataRaw)
+```
+
+### Data Transformation
+Now that the raw data is loaded into a raw data frame, subset the data to create a new data frame with a prioritiezed list of fatalities by event type.
+```{r}
+fatals <- aggregate(dataRaw$FATALITIES, by=list(dataRaw$EVTYPE), FUN=sum)
+colnames(fatals) <- c("EventType", "Fatalities")
+fatals <- fatals[with(fatals, order(-Fatalities)),]
+mostfatal <- fatals[1:12,]
+mostfatalordered <- mostfatal
+mostfatalordered$EventType <- factor(mostfatalordered$EventType, levels = mostfatalordered$EventType[order(mostfatalordered$Fatalities)])
+```
+Now subset the data again to create a new data frame with a prioritiezed list of injuries by event type.
+```{r}
+injuries <- aggregate(dataRaw$INJURIES, by=list(dataRaw$EVTYPE), FUN=sum)
+colnames(injuries) <- c("EventType", "Injuries")
+injuries <- injuries[with(injuries, order(-Injuries)),]
+mostinjuries <- injuries[1:12,]
+mostinjordered <- mostinjuries
+mostinjordered$EventType <- factor(mostinjordered$EventType, levels = mostinjordered$EventType[order(mostinjordered$Injuries)])
+```
+
+Add more readable column headers, transform the observations to understandable numbers. Subset the data again to create new data frames with a prioritized list of property damage and crop damage by event type.  Economic values, some of which are in Billions (B) and Millions (M), are coverted to Thousands (K)
+
+```{r}
+damage <- dataRaw[, c("EVTYPE", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
+
+damage$PropDamage <- damage$PROPDMG
+hasB_prop <- which(damage$PROPDMG > 0 & damage$PROPDMGEXP == "B")
+for (i in hasB_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] * 1000000
+
+hasM_prop <- which(damage$PROPDMG > 0 & damage$PROPDMGEXP == "M")
+for (i in hasM_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] * 1000
+
+damage$CropDamage <- damage$CROPDMG
+hasB_crop <- which(damage$CROPDMG > 0 & damage$CROPDMGEXP == "B")
+for (i in hasB_crop) damage[i, "CropDamage"] <- damage[i, "CROPDMG"] * 1000000
+
+hasM_crop <- which(damage$CROPDMG > 0 & damage$CROPDMGEXP == "M")
+for (i in hasM_crop) damage[i, "CropDamage"] <- damage[i, "CROPDMG"] * 1000
+
+propdamage <- aggregate(damage$PropDamage, by=list(damage$EVTYPE), FUN=sum)
+cropdamage <- aggregate(damage$CropDamage, by=list(damage$EVTYPE), FUN=sum)
+colnames(propdamage) <- c("EventType", "Damage")
+colnames(cropdamage) <- c("EventType", "Damage")
+propdamage <- propdamage[with(propdamage, order(-Damage)),]
+cropdamage <- cropdamage[with(cropdamage, order(-Damage)),]
+
+combined <- merge(propdamage, cropdamage, by="EventType", all.x=TRUE, all.y=TRUE)
+combined <- transform(combined, TotalDamage = Damage.x + Damage.y)
+colnames(combined) <- c("EventType", "Property", "Crop", "Total")
+combined <- combined[with(combined, order(-Total, -Property, -Crop)),]
+mostdamage <- combined[1:12,]
+
+mostpropdamage <- propdamage[1:12,]
+mostcropdamage <- cropdamage[1:12,]
+```
+
+
+## Results
+
+#### 1. Across the United States, which types of events are most harmful with respect to population health?
+
+By a very wide margin, tornadoes cause the most population fatalities and injuries for all weather events. In regards to Fatalaties, Excessive Heat was #2 and Flash Floods was #3.  In regards to Injuries, Marine Straight-Line Winds (TSTM) was #2, and Floods was #3.
+
+```{r}
+# function for displaying any plot in the grid
+vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
+
+plot1 <- ggplot(mostfatalordered, aes(x = EventType, y = Fatalities)) + geom_bar(stat= "identity", fill = "red", col = "black") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+plot2 <- ggplot(mostinjordered, aes(x = EventType, y = Injuries)) + geom_bar(stat= "identity", fill = "orange", col = "black") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(1, 2)))
+print(plot1, vp = vplayout(1, 1))
+print(plot2, vp = vplayout(1, 2))
+```
+
+
+
+#### 2. Across the United States, which types of events have the greatest economic consequences?
+
+```{r}
+plot3 <- ggplot(mostdamage, aes(x=EventType, y=Total)) + geom_histogram(stat= "identity") +  geom_bar(width = 0.8, position = position_dodge(width = 0.9)) + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+plot4 <- ggplot(mostpropdamage, aes(x=EventType, y=Damage)) + geom_histogram(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+plot5 <- ggplot(mostcropdamage, aes(x=EventType, y=Damage)) + geom_histogram(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(3, 1)))
+print(plot3, vp = vplayout(1, 1))
+print(plot4, vp = vplayout(2, 1))
+print(plot5, vp = vplayout(3, 1))
+```
+
+
