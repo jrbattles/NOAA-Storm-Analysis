@@ -75,17 +75,17 @@ damage <- dataRaw[, c("EVTYPE", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP"
 
 damage$PropDamage <- damage$PROPDMG
 hasB_prop <- which(damage$PROPDMG > 0 & damage$PROPDMGEXP == "B")
-for (i in hasB_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] * 1000000
+for (i in hasB_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] * 1000
 
-hasM_prop <- which(damage$PROPDMG > 0 & damage$PROPDMGEXP == "M")
-for (i in hasM_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] * 1000
+hasK_prop <- which(damage$PROPDMG > 0 & damage$PROPDMGEXP == "K")
+for (i in hasK_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] / 1000
 
 damage$CropDamage <- damage$CROPDMG
 hasB_crop <- which(damage$CROPDMG > 0 & damage$CROPDMGEXP == "B")
-for (i in hasB_crop) damage[i, "CropDamage"] <- damage[i, "CROPDMG"] * 1000000
+for (i in hasB_crop) damage[i, "CropDamage"] <- damage[i, "CROPDMG"] * 1000
 
-hasM_crop <- which(damage$CROPDMG > 0 & damage$CROPDMGEXP == "M")
-for (i in hasM_crop) damage[i, "CropDamage"] <- damage[i, "CROPDMG"] * 1000
+hasK_crop <- which(damage$CROPDMG > 0 & damage$CROPDMGEXP == "K")
+for (i in hasK_crop) damage[i, "CropDamage"] <- damage[i, "CROPDMG"] / 1000
 
 propdamage <- aggregate(damage$PropDamage, by=list(damage$EVTYPE), FUN=sum)
 cropdamage <- aggregate(damage$CropDamage, by=list(damage$EVTYPE), FUN=sum)
@@ -129,9 +129,9 @@ print(plot2, vp = vplayout(1, 2))
 #### 2. Across the United States, which types of events have the greatest economic consequences?
 
 ```{r}
-plot3 <- ggplot(mostdamage, aes(x=EventType, y=Total)) + geom_histogram(stat= "identity") +  geom_bar(width = 0.8, position = position_dodge(width = 0.9)) + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
-plot4 <- ggplot(mostpropdamage, aes(x=EventType, y=Damage)) + geom_histogram(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
-plot5 <- ggplot(mostcropdamage, aes(x=EventType, y=Damage)) + geom_histogram(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+plot3 <- ggplot(mostdamage, aes(x=EventType, y=Total)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+plot4 <- ggplot(mostpropdamage, aes(x=EventType, y=Damage)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
+plot5 <- ggplot(mostcropdamage, aes(x=EventType, y=Damage)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1))
 
 grid.newpage()
 pushViewport(viewport(layout = grid.layout(3, 1)))
