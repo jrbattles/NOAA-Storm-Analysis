@@ -5,7 +5,7 @@ Storms and other severe weather events can cause both public health and economic
 This brief study involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
 
 ## Focus Area and Questions
-The basic goal of this study is to explore the NOAA Storm Database and answer some basic questions about severe weather events and their impact on fatalities, injuries, and economic impact.
+The basic goal of this study is to explore the NOAA Storm Database and answer some basic questions about severe weather events and their impact on fatalities, injuries, and the economy.
 
 ##### 1. Across the United States, which types of events are most harmful with respect to population health?
 
@@ -29,3 +29,5 @@ The events in the database start in the year 1950 and end in November 2011. In t
 ## Reproducible Research
 
 The results of this study are published in the `StormImpactAnalysis.md` and `StormImpactAnalysis.html` files.
+
+The results have also been published to RPubs. You may access it here [NOAA Storm Impact Analysis](http://rpubs.com/jrbattles/190200)
