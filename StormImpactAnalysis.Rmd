@@ -25,7 +25,7 @@ This report may be considered by a government or municipal manager who might be 
 ### Prepare Environment
 The analysis environment must be prepared with the appropriate libraries
 ```{r}
-install.packages("downloader")
+# install.packages("downloader")  ## Commented out to installing agin if not necessary
 library(downloader)
 library(ggplot2)
 library(grid)
@@ -39,18 +39,19 @@ Download the compressed data file. Decompress the file and assign the results to
 
 download(url="https://d396qusza40orc.cloudfront.net/repdata/data/StormData.csv.bz2", destfile="../data/StormData.csv.bz2")
 
+## I like keeping my raw data files in a separate higher directory to avoid pushing large files to GitHub
 dataRaw <- read.csv(bzfile("../data/StormData.csv.bz2"))
 ```
 
 ### Data Verification
-There should be 90,2297 observations across 37 variables
+There should be 902,297 observations across 37 variables if the raw data frame is correctly populated
 ```{r}
 str(dataRaw)
 ```
 
 ### Data Transformation
-Now that the raw data is loaded into a raw data frame, subset the data to create a new data frame with a prioritiezed list of fatalities by event type.
-```{r}
+Now that the raw data is loaded into a raw data frame, subset the data to create a new data frame with a prioritized list of fatalities by event type.  The fatalities data frame is factored explicity to allow for ascending graph order later in the analysis.
+```{r cache=TRUE}
 fatals <- aggregate(dataRaw$FATALITIES, by=list(dataRaw$EVTYPE), FUN=sum)
 colnames(fatals) <- c("EventType", "Fatalities")
 fatals <- fatals[with(fatals, order(-Fatalities)),]
@@ -61,8 +62,8 @@ mostfatalordered <- mostfatal
 mostfatalordered$EventType <- factor(mostfatalordered$EventType, levels = mostfatalordered$EventType[order(mostfatalordered$Fatalities)])
 ```
 
-Now subset the data again to create a new data frame with a prioritized list of injuries by event type.
-```{r}
+Now subset the data again to create a new data frame with a prioritized list of injuries by event type.  The injuries data frame is factored explicity to allow for ascending graph order later in the analysis.
+```{r cache=TRUE}
 injuries <- aggregate(dataRaw$INJURIES, by=list(dataRaw$EVTYPE), FUN=sum)
 colnames(injuries) <- c("EventType", "Injuries")
 injuries <- injuries[with(injuries, order(-Injuries)),]
@@ -73,30 +74,33 @@ mostinjordered <- mostinjuries
 mostinjordered$EventType <- factor(mostinjordered$EventType, levels = mostinjordered$EventType[order(mostinjordered$Injuries)])
 ```
 
-Add more readable column headers, transform the observations to understandable numbers. Subset the data again to create new data frames with a prioritized list of property damage and crop damage by event type.  Economic values, some of which are in Billions (B) and Millions (M), and Thousands (K), are all converted to Millions
+Add more readable column headers, transform the observations to more readable numbers. Subset the damage data again to create new data frames with a prioritized list of Property Damage and Crop Damage by event type.  Economic values, some of which are in Billions (B) and Millions (M), and Thousands (K), are all converted to Millions
 
-```{r}
+```{r cache=TRUE}
 damage <- dataRaw[, c("EVTYPE", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
 
-## Convert damage values to Millions
 damage$PropDamage <- damage$PROPDMG
+## Convert Billions damage values to Millions
 hasB_prop <- which(damage$PROPDMG > 0 & damage$PROPDMGEXP == "B")
 for (i in hasB_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] * 1000
-
+## Convert Thousands damage values to Millions
 hasK_prop <- which(damage$PROPDMG > 0 & damage$PROPDMGEXP == "K")
 for (i in hasK_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] / 1000
 
 damage$CropDamage <- damage$CROPDMG
+## Convert Billions damage values to Millions
 hasB_crop <- which(damage$CROPDMG > 0 & damage$CROPDMGEXP == "B")
 for (i in hasB_crop) damage[i, "CropDamage"] <- damage[i, "CROPDMG"] * 1000
-
+## Convert Thousands damage values to Millions
 hasK_crop <- which(damage$CROPDMG > 0 & damage$CROPDMGEXP == "K")
 for (i in hasK_crop) damage[i, "CropDamage"] <- damage[i, "CROPDMG"] / 1000
 
 propdamage <- aggregate(damage$PropDamage, by=list(damage$EVTYPE), FUN=sum)
 cropdamage <- aggregate(damage$CropDamage, by=list(damage$EVTYPE), FUN=sum)
+
 colnames(propdamage) <- c("EventType", "Damage")
 colnames(cropdamage) <- c("EventType", "Damage")
+
 propdamage <- propdamage[with(propdamage, order(-Damage)),]
 cropdamage <- cropdamage[with(cropdamage, order(-Damage)),]
 
@@ -110,15 +114,15 @@ mostdamage <- combined[1:12,]
 mostpropdamage <- propdamage[1:12,]
 mostcropdamage <- cropdamage[1:12,]
 
-## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot pgraph order. 
+## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot graph order. 
 mostdamageOrd <- mostdamage
 mostdamageOrd$EventType <- factor(mostdamageOrd$EventType, levels = mostdamageOrd$EventType[order(mostdamageOrd$Total)])
 
-## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot pgraph order. 
+## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot graph order. 
 mostpropdamageOrd <- mostpropdamage
 mostpropdamageOrd$EventType <- factor(mostpropdamageOrd$EventType, levels = mostpropdamageOrd$EventType[order(mostpropdamageOrd$Damage)])
 
-## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot pgraph order. 
+## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot graph order. 
 mostcropdamageOrd <- mostcropdamage
 mostcropdamageOrd$EventType <- factor(mostcropdamageOrd$EventType, levels = mostcropdamageOrd$EventType[order(mostcropdamageOrd$Damage)])
 
@@ -146,6 +150,15 @@ print(plot1, vp = vplayout(1, 1))
 print(plot2, vp = vplayout(1, 2))
 ```
 
+Here are the values for the Top 12 fatality-causing weather types
+```{r}
+mostfatal
+```
+
+Here are the values for the Top 12 injury-causing weather types
+```{r}
+mostinjuries
+```
 
 
 #### 2. Across the United States, which types of events have the greatest economic consequences?
@@ -162,4 +175,8 @@ print(plot4, vp = vplayout(2, 1))
 print(plot5, vp = vplayout(3, 1))
 ```
 
+Here are the dollar values in Millions for the Top 12 property-damaging weather types
+```{r}
+mostdamage
+```
 

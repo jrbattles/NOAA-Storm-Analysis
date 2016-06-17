@@ -7,9 +7,9 @@ This brief study involves exploring the U.S. National Oceanic and Atmospheric Ad
 ## Focus Area and Questions
 The basic goal of this study is to explore the NOAA Storm Database and answer some basic questions about severe weather events and their impact on fatalities, injuries, and economic impact.
 
-1. Across the United States, which types of events are most harmful with respect to population health?
+#### 1. Across the United States, which types of events are most harmful with respect to population health?
 
-2. Across the United States, which types of events have the greatest economic consequences?
+#### 2. Across the United States, which types of events have the greatest economic consequences?
 
 This report may be considered by a government or municipal manager who might be responsible for preparing for severe weather events and will need to prioritize resources for different types of events.
 
@@ -30,7 +30,6 @@ The events in the database start in the year 1950 and end in November 2011. In t
 
 The results of this study are published the `StormImpactAnalysis.md` and `StormImpactAnalysis.html` files.
 
-This study will address the following aspects of this inividual's physical activity.  
 
 ### What is mean total number of steps taken per day?
 
