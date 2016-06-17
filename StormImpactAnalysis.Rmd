@@ -25,7 +25,7 @@ This report may be considered by a government or municipal manager who might be 
 ### Prepare Environment
 The analysis environment must be prepared with the appropriate libraries
 ```{r}
-# install.packages("downloader")  ## Commented out to installing agin if not necessary
+# install.packages("downloader")  ## Commented out to avoid installing agin if not necessary
 library(downloader)
 library(ggplot2)
 library(grid)
@@ -133,9 +133,9 @@ mostcropdamageOrd$EventType <- factor(mostcropdamageOrd$EventType, levels = most
 
 #### 1. Across the United States, which types of events are most harmful with respect to population health?
 
-By a very wide margin, *Tornadoes* cause the most population fatalities and injuries for all weather events (*Graph #1*). In regards to Fatalaties, Excessive Heat was #2 and Flash Floods was #3.  
+By a very wide margin, **Tornadoes** cause the most population fatalities and injuries for all weather events (*Graph #1*). In regards to Fatalaties, Excessive Heat was #2 and Flash Floods was #3.  
 
-In regards to Injuries, after *Tornadoes*, Marine Straight-Line Winds (TSTM) was #2, and Floods was #3 (*Graph #2*).
+In regards to Injuries, after **Tornadoes**, Marine Straight-Line Winds (TSTM) was #2, and Floods was #3 (*Graph #2*).
 
 ```{r}
 # function for displaying any plot in the grid
@@ -162,7 +162,7 @@ mostinjuries
 
 
 #### 2. Across the United States, which types of events have the greatest economic consequences?
-*Floods* caused the most Total Damage (*Graph #3*).  *Floods* also cause the most in Total Property Damage (*Graph #4*).  Howoever, *Droughts* cause the Most Crop Damage (*Graph #3*)
+**Floods** caused the most Total Damage (*Graph #3*).  *Floods* also cause the most in Total Property Damage (*Graph #4*).  Howoever, **Droughts** cause the Most Crop Damage (*Graph #3*)
 ```{r}
 plot3 <- ggplot(mostdamageOrd, aes(x=EventType, y=Total)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1)) + ylab("$MM") + labs(title = "Total Damage by Event Type") + xlab("")
 plot4 <- ggplot(mostpropdamageOrd, aes(x=EventType, y=Damage)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1)) + ylab("$MM") + labs(title = "Total Property Damage by Event Type") + xlab("")
