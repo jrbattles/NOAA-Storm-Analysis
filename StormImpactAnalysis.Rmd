@@ -14,7 +14,7 @@ Storms and other severe weather events can cause both public health and economic
 
 This brief study involves exploring the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
 
-The basic goal of this study is to explore the NOAA Storm Database and answer some basic questions about severe weather events and their impact on fatalities, injuries, and economic impact.
+The goal of this study is to explore the NOAA Storm Database and answer some questions about severe weather events and their impact on fatalities, injuries, and economies.
 
 1. Across the United States, which types of events are most harmful with respect to population health?
 
@@ -22,10 +22,8 @@ The basic goal of this study is to explore the NOAA Storm Database and answer so
 
 This report may be considered by a government or municipal manager who might be responsible for preparing for severe weather events and will need to prioritize resources for different types of events.
 
-## Data Processing
-
 ### Prepare Environment
-
+The analysis environment must be prepared with the appropriate libraries
 ```{r}
 install.packages("downloader")
 library(downloader)
@@ -33,8 +31,10 @@ library(ggplot2)
 library(grid)
 ```
 
+## Data Processing
+
 ### Data Load
-Download the compressed data file. Decompress the file and assign the results to a data frame.
+Download the compressed data file. Decompress the file and assign the results to a raw data frame (dataRaw).
 ```{r cache=TRUE}
 
 download(url="https://d396qusza40orc.cloudfront.net/repdata/data/StormData.csv.bz2", destfile="../data/StormData.csv.bz2")
@@ -43,7 +43,7 @@ dataRaw <- read.csv(bzfile("../data/StormData.csv.bz2"))
 ```
 
 ### Data Verification
-There should be 90,2297 observations of 37 variables
+There should be 90,2297 observations across 37 variables
 ```{r}
 str(dataRaw)
 ```
@@ -55,24 +55,30 @@ fatals <- aggregate(dataRaw$FATALITIES, by=list(dataRaw$EVTYPE), FUN=sum)
 colnames(fatals) <- c("EventType", "Fatalities")
 fatals <- fatals[with(fatals, order(-Fatalities)),]
 mostfatal <- fatals[1:12,]
+
+## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot pgraph order. 
 mostfatalordered <- mostfatal
 mostfatalordered$EventType <- factor(mostfatalordered$EventType, levels = mostfatalordered$EventType[order(mostfatalordered$Fatalities)])
 ```
-Now subset the data again to create a new data frame with a prioritiezed list of injuries by event type.
+
+Now subset the data again to create a new data frame with a prioritized list of injuries by event type.
 ```{r}
 injuries <- aggregate(dataRaw$INJURIES, by=list(dataRaw$EVTYPE), FUN=sum)
 colnames(injuries) <- c("EventType", "Injuries")
 injuries <- injuries[with(injuries, order(-Injuries)),]
 mostinjuries <- injuries[1:12,]
+
+## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot graph order. 
 mostinjordered <- mostinjuries
 mostinjordered$EventType <- factor(mostinjordered$EventType, levels = mostinjordered$EventType[order(mostinjordered$Injuries)])
 ```
 
-Add more readable column headers, transform the observations to understandable numbers. Subset the data again to create new data frames with a prioritized list of property damage and crop damage by event type.  Economic values, some of which are in Billions (B) and Millions (M), are coverted to Thousands (K)
+Add more readable column headers, transform the observations to understandable numbers. Subset the data again to create new data frames with a prioritized list of property damage and crop damage by event type.  Economic values, some of which are in Billions (B) and Millions (M), and Thousands (K), are all converted to Millions
 
 ```{r}
 damage <- dataRaw[, c("EVTYPE", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
 
+## Convert damage values to Millions
 damage$PropDamage <- damage$PROPDMG
 hasB_prop <- which(damage$PROPDMG > 0 & damage$PROPDMGEXP == "B")
 for (i in hasB_prop) damage[i, "PropDamage"] <- damage[i, "PROPDMG"] * 1000
@@ -98,17 +104,21 @@ combined <- merge(propdamage, cropdamage, by="EventType", all.x=TRUE, all.y=TRUE
 combined <- transform(combined, TotalDamage = Damage.x + Damage.y)
 colnames(combined) <- c("EventType", "Property", "Crop", "Total")
 combined <- combined[with(combined, order(-Total, -Property, -Crop)),]
-mostdamage <- combined[1:12,]
 
+## Identify the Top 12 damaging events -- Total Damage, Property Damage, Crop Damage
+mostdamage <- combined[1:12,]
 mostpropdamage <- propdamage[1:12,]
 mostcropdamage <- cropdamage[1:12,]
 
+## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot pgraph order. 
 mostdamageOrd <- mostdamage
 mostdamageOrd$EventType <- factor(mostdamageOrd$EventType, levels = mostdamageOrd$EventType[order(mostdamageOrd$Total)])
 
+## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot pgraph order. 
 mostpropdamageOrd <- mostpropdamage
 mostpropdamageOrd$EventType <- factor(mostpropdamageOrd$EventType, levels = mostpropdamageOrd$EventType[order(mostpropdamageOrd$Damage)])
 
+## Change the order of the factor levels by ordering them explicitly.  Allows ascending ggplot pgraph order. 
 mostcropdamageOrd <- mostcropdamage
 mostcropdamageOrd$EventType <- factor(mostcropdamageOrd$EventType, levels = mostcropdamageOrd$EventType[order(mostcropdamageOrd$Damage)])
 
@@ -119,7 +129,9 @@ mostcropdamageOrd$EventType <- factor(mostcropdamageOrd$EventType, levels = most
 
 #### 1. Across the United States, which types of events are most harmful with respect to population health?
 
-By a very wide margin, tornadoes cause the most population fatalities and injuries for all weather events. In regards to Fatalaties, Excessive Heat was #2 and Flash Floods was #3.  In regards to Injuries, Marine Straight-Line Winds (TSTM) was #2, and Floods was #3.
+By a very wide margin, *Tornadoes* cause the most population fatalities and injuries for all weather events (*Graph #1*). In regards to Fatalaties, Excessive Heat was #2 and Flash Floods was #3.  
+
+In regards to Injuries, after *Tornadoes*, Marine Straight-Line Winds (TSTM) was #2, and Floods was #3 (*Graph #2*).
 
 ```{r}
 # function for displaying any plot in the grid
@@ -137,7 +149,7 @@ print(plot2, vp = vplayout(1, 2))
 
 
 #### 2. Across the United States, which types of events have the greatest economic consequences?
-Floods caused the most Total Damage (graph #1).  Floods also cause the most in Total Property Damage (graph #2).  Howoever, droughts cause the Most Crop Damage (graph #3)
+*Floods* caused the most Total Damage (*Graph #3*).  *Floods* also cause the most in Total Property Damage (*Graph #4*).  Howoever, *Droughts* cause the Most Crop Damage (*Graph #3*)
 ```{r}
 plot3 <- ggplot(mostdamageOrd, aes(x=EventType, y=Total)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1)) + ylab("$MM") + labs(title = "Total Damage by Event Type") + xlab("")
 plot4 <- ggplot(mostpropdamageOrd, aes(x=EventType, y=Damage)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1)) + ylab("$MM") + labs(title = "Total Property Damage by Event Type") + xlab("")
