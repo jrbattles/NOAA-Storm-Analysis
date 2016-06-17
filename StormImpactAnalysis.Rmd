@@ -162,17 +162,26 @@ mostinjuries
 
 
 #### 2. Across the United States, which types of events have the greatest economic consequences?
-**Floods** caused the most Total Damage (*Graph #3*).  *Floods* also cause the most in Total Property Damage (*Graph #4*).  Howoever, **Droughts** cause the Most Crop Damage (*Graph #3*)
+
 ```{r}
 plot3 <- ggplot(mostdamageOrd, aes(x=EventType, y=Total)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1)) + ylab("$MM") + labs(title = "Total Damage by Event Type") + xlab("")
 plot4 <- ggplot(mostpropdamageOrd, aes(x=EventType, y=Damage)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1)) + ylab("$MM") + labs(title = "Total Property Damage by Event Type") + xlab("")
 plot5 <- ggplot(mostcropdamageOrd, aes(x=EventType, y=Damage)) + geom_bar(stat= "identity") + theme(axis.text.x = element_text(size=8, angle=45, hjust=1)) + ylab("$MM") + labs(title = "Total Crop Damage by Event Type") + xlab("")
+```
 
-grid.newpage()
-pushViewport(viewport(layout = grid.layout(3, 1)))
-print(plot3, vp = vplayout(1, 1))
-print(plot4, vp = vplayout(2, 1))
-print(plot5, vp = vplayout(3, 1))
+**Floods** caused the most Total Damage (*Graph #3*). 
+```{r}
+print(plot3)
+```
+
+**Floods** also cause the most in Total Property Damage (*Graph #4*)
+```{r}
+print(plot4)
+```
+
+However, **Droughts** cause the Most Crop Damage (*Graph #3*)
+```{r}
+print(plot5)
 ```
 
 Here are the dollar values in Millions for the Top 12 property-damaging weather types
@@ -180,3 +189,9 @@ Here are the dollar values in Millions for the Top 12 property-damaging weather 
 mostdamage
 ```
 
+## Conclusions
+Analysis of the NOAA Storm Database provided some interesting insights into which types of weather events pose major threats to the U.S. population and economy.  
+
+1. From a Population Health perspective, we can conclude that increased attention on safety from **Tornadoes** would yield the greatest benefit in terms of reduced fatalities and injuries.  
+
+2. From a purely Economic perspective, **Floods**, **Hurricanes** and **Droughts** have the largest impact of all the weather types.  
